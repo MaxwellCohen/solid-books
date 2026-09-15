@@ -1,4 +1,5 @@
 import { createMemo, createSignal, Show } from "solid-js";
+import { thumbHashToDataURL } from "thumbhash";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from "@/features/book/book-constants";
 import { loadBookCover } from "@/features/book/book-images";
@@ -13,9 +14,19 @@ type Props = {
   priority?: boolean;
 };
 
+function thumbhashUrl(hash: string | null) {
+  if (!hash) return undefined;
+  try {
+    const binary = atob(hash);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return thumbHashToDataURL(bytes);
+  } catch {
+    return undefined;
+  }
+}
+
 export function BookCover(props: Props) {
-  // An async memo is the installed runtime's waitAsset mechanism, without
-  // importing waitAsset (which has no server export yet).
   const readySrc = createMemo(
     () => props.priority
       ? loadBookCover(props.src, true)
@@ -25,13 +36,23 @@ export function BookCover(props: Props) {
   const [failedSrc, setFailedSrc] = createSignal<string | null>(null, {
     name: "BookCover.failedSrc",
   });
+  const placeholder = () => thumbhashUrl(props.thumbhash);
 
   return (
     <div
       class={cn(
-        "bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md",
+        "bg-card dark:bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md",
         props.class,
       )}
+      style={
+        placeholder()
+          ? {
+              "background-image": `url(${placeholder()})`,
+              "background-size": "cover",
+              "background-position": "center",
+            }
+          : undefined
+      }
     >
       <Show
         when={readySrc() !== failedSrc() ? readySrc() : null}

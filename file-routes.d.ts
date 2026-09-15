@@ -33,6 +33,12 @@ declare module "virtual:file-routes" {
   /** The flat route manifest, in scan order. */
   const routes: readonly [
     {
+      path: "/*path";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/[...path]")>;
+      $$route?: undefined;
+    },
+    {
       path: "/:id";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/[id]")>;
@@ -63,6 +69,14 @@ declare module "virtual:file-routes" {
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/[id]")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/[id]")>;
+      children?: undefined;
+    },
+    {
+      path: "/*path";
+      id: "/*path";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/[...path]")>;
+      $$route?: undefined;
       children?: undefined;
     }
   ];

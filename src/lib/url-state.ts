@@ -72,7 +72,6 @@ export function getCurrentPage(params: SearchParams, totalPages?: number): numbe
 export function withFilters(current: SearchParams, patch: Partial<SearchParams>): SearchParams {
   const next: SearchParams = { ...current, ...patch };
   delete next.page;
-  delete next.delay;
   for (const key of FILTER_KEYS) {
     if (next[key] === undefined || next[key] === "") delete next[key];
   }

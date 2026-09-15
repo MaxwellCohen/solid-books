@@ -36,11 +36,11 @@ export default function BookPage() {
   );
 
   return (
-    <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
+    <div class="flex flex-1 flex-col px-4 py-5 sm:px-6">
       <Title>Book · Solid Books</Title>
       <BackToBooksLink class="mb-6" />
       <Errored
-        fallback={(error) => {
+        fallback={(error, reset) => {
           const err = error();
           const message = err instanceof Error ? err.message : "";
           if (message === "Book not found" || message === "Invalid book ID") {
@@ -60,7 +60,11 @@ export default function BookPage() {
             <ErrorState
               body="We couldn't load this book's details."
               title="Can't load book"
-            />
+            >
+              <Button class="mt-1" onClick={reset} size="sm" variant="secondary">
+                Try again
+              </Button>
+            </ErrorState>
           );
         }}
       >

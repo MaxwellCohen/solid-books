@@ -12,6 +12,6 @@ export default {
     DATABASE_URL_UNPOOLED: v.optional(v.pipe(v.string(), v.minLength(1))),
   },
   client: {
-    VITE_APP_NAME: v.optional(v.pipe(v.string(), v.minLength(1)), "Solid App"),
+    VITE_APP_NAME: v.optional(v.pipe(v.string(), v.minLength(1)), "Solid Books"),
   },
 };

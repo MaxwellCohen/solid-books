@@ -5,7 +5,7 @@ import {
   BookCard,
   BookCardSkeleton,
 } from "@/features/book/components/book-card";
-import { type SearchParams } from "@/lib/url-state";
+import { getCurrentPage, type SearchParams } from "@/lib/url-state";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const gridClass =
@@ -31,6 +31,7 @@ export function BookGrid(props: {
             {(book, index) => (
               <BookCard
                 book={book}
+                eagerPrefetch={getCurrentPage(props.searchParams) === 1}
                 priority={index() < PRIORITY_COVER_COUNT}
                 searchParams={props.searchParams}
               />

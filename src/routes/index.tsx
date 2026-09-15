@@ -2,6 +2,7 @@ import { RouteDefinition, useSearchParams } from "@solidjs/router";
 import { createMemo, Errored, isPending, latest, Loading } from "solid-js";
 import { getBooksCount, getBooksPage } from "../api";
 import { ErrorState } from "../components/ui/error-state";
+import { Button } from "../components/ui/button";
 import { toBookFilters, toBookQuery } from "../features/book/book-utils";
 import {
   BookGrid,
@@ -44,12 +45,16 @@ export default function Home() {
 
   return (
     <Errored
-      fallback={
+      fallback={(_error, reset) => (
         <ErrorState
           body="The catalog query failed. Check your database connection and try again."
           title="Can't load books"
-        />
-      }
+        >
+          <Button class="mt-1" onClick={reset} size="sm" variant="secondary">
+            Try again
+          </Button>
+        </ErrorState>
+      )}
     >
       <Title>Books · Solid Books</Title>
       {/* Discoverable hints start priority requests as soon as data streams. */}
@@ -57,7 +62,7 @@ export default function Home() {
         <BookCoverPreloads books={bookData()} />
       </Loading>
       <div class="flex min-h-0 flex-1 flex-col">
-        <div class="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+        <div class="flex-1 px-4 py-5 transition-opacity duration-200 ease-out group-has-[[data-filtering]]:opacity-60 sm:px-6">
           <Loading fallback={<BookGridSkeleton />}>
             {/* Keep the pending indicator live while retaining the old page. */}
             <div
@@ -69,7 +74,7 @@ export default function Home() {
             </div>
           </Loading>
         </div>
-        <footer class="border-divider-dark shrink-0 border-t px-4 py-3 sm:px-6">
+        <footer class="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
           <Loading fallback={<BookPaginationSkeleton />}>
             <BookPagination searchParams={searchParams()} />
           </Loading>

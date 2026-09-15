@@ -16,7 +16,7 @@ import type { SearchParams } from "@/lib/url-state";
 import { cn } from "@/lib/utils";
 
 const stepClass =
-  "text-muted hover:bg-card-dark focus-visible:ring-action/40 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors hover:text-white focus-visible:ring-2 focus-visible:outline-none";
+  "text-muted hover:bg-card dark:hover:bg-card-dark focus-visible:ring-action/40 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors hover:text-black focus-visible:ring-2 focus-visible:outline-none dark:hover:text-white";
 
 export function BookPagination(props: { searchParams: SearchParams }) {
   const totalResults = createMemo(() =>
@@ -40,6 +40,7 @@ export function BookPagination(props: { searchParams: SearchParams }) {
           aria-label="Previous page"
           class={stepClass}
           href={buildHref(withPage(props.searchParams, currentPage() - 1))}
+          prefetch={true}
         >
           <LinkStatus>
             <ChevronLeftIcon class="size-4" />
@@ -58,14 +59,14 @@ export function BookPagination(props: { searchParams: SearchParams }) {
 
       <p class="text-muted flex items-center gap-2 text-xs tabular-nums sm:text-sm">
         <span class="hidden sm:inline">
-          <span class="font-medium text-white">
+          <span class="font-medium text-black dark:text-white">
             {totalResults().toLocaleString()}
           </span>{" "}
           books
         </span>
         <span
           aria-hidden="true"
-          class="bg-divider-dark hidden h-3 w-px sm:block"
+          class="bg-divider dark:bg-divider-dark hidden h-3 w-px sm:block"
         />
         <span>
           Page {currentPage().toLocaleString()} of{" "}
@@ -78,6 +79,7 @@ export function BookPagination(props: { searchParams: SearchParams }) {
           aria-label="Next page"
           class={stepClass}
           href={buildHref(withPage(props.searchParams, currentPage() + 1))}
+          prefetch={true}
         >
           <LinkStatus hint="start">
             Next
@@ -106,7 +108,7 @@ export function BookPaginationSkeleton() {
       </span>
       <div class="flex items-center gap-2">
         <Skeleton class="skeleton-subtle hidden h-4 w-20 sm:block" />
-        <span class="bg-divider-dark hidden h-3 w-px sm:block" />
+        <span class="bg-divider dark:bg-divider-dark hidden h-3 w-px sm:block" />
         <Skeleton class="skeleton-subtle h-4 w-20" />
       </div>
       <span class={cn(stepClass, "pointer-events-none opacity-40")}>

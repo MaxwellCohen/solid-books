@@ -1,11 +1,9 @@
 export function CatalogSize() {
   return (
     <div>
-      <p class="text-muted text-[11px] font-semibold tracking-wide uppercase">
-        Catalog
-      </p>
+      <p class="text-2xl font-semibold tracking-tight tabular-nums">2M+</p>
       <p class="text-muted mt-1 text-xs leading-5">
-        Goodreads titles, browsed with Solid.
+        books from Goodreads. Built on Solid.
       </p>
     </div>
   );

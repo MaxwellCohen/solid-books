@@ -1,28 +1,48 @@
-import { createSignal, createUniqueId, isPending } from "solid-js";
+import { createSignal, createTrackedEffect, createUniqueId, isPending } from "solid-js";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { IconButton } from "@/components/ui/icon-button";
 import { SearchIcon, XIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { buildHref, parseSearchParams } from "@/lib/url-state";
+import { buildHref, parseSearchParams, withFilters } from "@/lib/url-state";
+
+const DEBOUNCE_MS = 220;
 
 export function BookSearch() {
   const location = useLocation();
   const navigateTo = useNavigate();
   const [searchParams] = useSearchParams();
-  const [input, setInput] = createSignal<HTMLInputElement>();
+  const [draft, setDraft] = createSignal<string>();
   const inputId = createUniqueId();
+  const committed = () => parseSearchParams(searchParams).search ?? "";
+  const value = () => draft() ?? committed();
 
-  function navigate(value: string) {
-    const query = value.trim();
+  createTrackedEffect(() => {
+    committed();
+    setDraft(undefined);
+  });
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  createTrackedEffect(() => {
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  });
+
+  function navigate(nextValue: string) {
+    const query = nextValue.trim();
     const current = parseSearchParams(searchParams);
-    const next = { ...current, search: query || undefined };
-    delete next.page;
-    if (!next.search) delete next.search;
-    navigateTo(buildHref(next), {
+    navigateTo(buildHref(withFilters(current, { search: query || undefined })), {
       replace: location.pathname === "/",
       scroll: false,
     });
+  }
+
+  function schedule(nextValue: string) {
+    setDraft(nextValue);
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => navigate(nextValue), DEBOUNCE_MS);
   }
 
   return (
@@ -32,7 +52,8 @@ export function BookSearch() {
       data-filtering={isPending(() => searchParams.search) ? "" : undefined}
       onSubmit={(event) => {
         event.preventDefault();
-        navigate(input()?.value ?? "");
+        if (timer) clearTimeout(timer);
+        navigate(value());
       }}
       role="search"
     >
@@ -54,22 +75,20 @@ export function BookSearch() {
         id={inputId}
         name="search"
         onInput={(event) => {
-          const { value } = event.currentTarget as HTMLInputElement;
-          navigate(value);
+          schedule((event.currentTarget as HTMLInputElement).value);
         }}
         placeholder="Search books…"
-        ref={setInput}
         type="search"
+        value={value()}
         variant="search"
       />
       <IconButton
         class="absolute top-1/2 right-1.5 -translate-y-1/2 peer-placeholder-shown:hidden"
         label="Clear search"
         onClick={() => {
-          const el = input();
-          if (el) el.value = "";
+          if (timer) clearTimeout(timer);
+          setDraft("");
           navigate("");
-          el?.focus();
         }}
       >
         <XIcon class="size-4" />

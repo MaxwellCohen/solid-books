@@ -3,6 +3,13 @@ import { For, createMemo } from "solid-js";
 import type { BookDetails } from "@/features/book/book-queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
+import {
+  BookOpenIcon,
+  Building2Icon,
+  CalendarDaysIcon,
+  GlobeIcon,
+  HashIcon,
+} from "@/components/ui/icons";
 import { formatCount, getLanguageLabel } from "@/features/book/book-utils";
 import {
   BookCover,
@@ -63,14 +70,20 @@ export function BookDetail(props: { book: BookDetails }) {
           </p>
         ) : null}
 
-        <dl class="border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
-          <Fact label="Pages">
+        <dl class="border-divider dark:border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
+          <Fact icon={<BookOpenIcon class="size-4" />} label="Pages">
             {book().num_pages ? book().num_pages?.toLocaleString() : "Unknown"}
           </Fact>
-          <Fact label="Language">{getLanguageLabel(book().language_code)}</Fact>
-          <Fact label="Published">{book().publication_year ?? "Unknown"}</Fact>
-          <Fact label="Publisher">{book().publisher ?? "Unknown"}</Fact>
-          <Fact label="ISBN">
+          <Fact icon={<GlobeIcon class="size-4" />} label="Language">
+            {getLanguageLabel(book().language_code)}
+          </Fact>
+          <Fact icon={<CalendarDaysIcon class="size-4" />} label="Published">
+            {book().publication_year ?? "Unknown"}
+          </Fact>
+          <Fact icon={<Building2Icon class="size-4" />} label="Publisher">
+            {book().publisher ?? "Unknown"}
+          </Fact>
+          <Fact icon={<HashIcon class="size-4" />} label="ISBN">
             <span class="font-mono text-xs">{book().isbn ?? "None"}</span>
           </Fact>
         </dl>
@@ -79,9 +92,10 @@ export function BookDetail(props: { book: BookDetails }) {
   );
 }
 
-function Fact(props: { children: JSX.Element; label: string }) {
+function Fact(props: { children: JSX.Element; icon: JSX.Element; label: string }) {
   return (
     <div class="flex items-start gap-3">
+      <span class="text-muted mt-0.5 shrink-0">{props.icon}</span>
       <div class="min-w-0">
         <dt class="text-muted text-xs font-semibold tracking-wide uppercase">
           {props.label}
@@ -107,7 +121,7 @@ export function BookDetailSkeleton() {
           <Skeleton class="skeleton-subtle h-3.5 w-full max-w-prose" />
           <Skeleton class="skeleton-subtle h-3.5 w-4/5 max-w-prose" />
         </div>
-        <div class="border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
+        <div class="border-divider dark:border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
           <For each={[0, 1, 2, 3, 4]}>
             {() => (
               <div class="flex items-start gap-3">

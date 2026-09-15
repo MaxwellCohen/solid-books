@@ -13,6 +13,7 @@ type Props = {
   placeholder?: string;
   ref?: (el: HTMLInputElement) => void;
   type?: JSX.InputHTMLAttributes<HTMLInputElement>["type"];
+  value?: string;
   variant?: Variant;
 };
 
@@ -42,6 +43,7 @@ export function Input(props: Props) {
       placeholder={props.placeholder}
       ref={props.ref}
       type={props.type}
+      value={props.value}
     />
   );
 }
