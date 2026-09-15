@@ -17,7 +17,10 @@ export default defineConfig({
       serverFunctions: { configure: "./src/server-config.ts" },
     }),
     fileRoutes({ httpMethods: true, types: true }),
-    netlify({ build: { enabled: true } }),
+    netlify({
+      build: { enabled: true },
+      edgeFunctions: { enabled: false },
+    }),
   ],
   resolve: {
     alias: {
