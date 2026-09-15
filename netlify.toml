@@ -1,6 +1,9 @@
 [build]
-  command = "vite build"
-  publish = "dist/client"
+  command = "pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
 
 [dev]
   command = "vite dev"
