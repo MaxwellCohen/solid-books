@@ -17,7 +17,11 @@ export default defineConfig({
       serverFunctions: { configure: "./src/server-config.ts" },
     }),
     fileRoutes({ httpMethods: true, types: true }),
-    nitro(),
+    nitro(
+      process.env.WORKERS_CI || process.env.CLOUDFLARE
+        ? { preset: "cloudflare_module" }
+        : undefined,
+    ),
   ],
   resolve: {
     alias: {

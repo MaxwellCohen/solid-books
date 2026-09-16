@@ -1,7 +1,7 @@
 import "./load-env";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { closeSql, requireSql } from "./drizzle";
+import { closeSql, requireSql } from "./drizzle-node";
 import { processEntities } from "./seed-utils";
 
 const BATCH_SIZE = 2000;

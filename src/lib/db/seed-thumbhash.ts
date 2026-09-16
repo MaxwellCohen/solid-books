@@ -5,7 +5,7 @@ import pLimit from "p-limit";
 import sharp from "sharp";
 import * as ThumbHash from "thumbhash";
 import { EMPTY_IMAGE_URL } from "@/features/book/book-constants";
-import { closeSql, requireSql } from "./drizzle";
+import { closeSql, requireSql } from "./drizzle-node";
 import { processEntities } from "./seed-utils";
 
 const BATCH_SIZE = 900;
