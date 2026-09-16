@@ -18,7 +18,7 @@ export default defineConfig({
     }),
     fileRoutes({ httpMethods: true, types: true }),
     nitro(
-      process.env.WORKERS_CI || process.env.CLOUDFLARE
+      process.env.CLOUDFLARE || process.env.WORKERS_CI
         ? { preset: "cloudflare_module" }
         : undefined,
     ),
