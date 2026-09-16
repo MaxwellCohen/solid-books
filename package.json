@@ -53,5 +53,6 @@
     "solid-js": "^2.0.0-rc.6",
     "thumbhash": "^0.1.1",
     "valibot": "^1.4.2"
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
