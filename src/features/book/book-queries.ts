@@ -11,6 +11,7 @@ import { GENERATED_PREVIEW_BOOKS } from "@/features/book/book-preview-catalog";
 import type { BookFilters, BookQuery } from "@/features/book/book-utils";
 import { SAMPLE_BOOKS } from "@/features/book/data/sample-books";
 import { getBookCoverUrl } from "@/features/book/data/cover-images";
+import { withTtlCache } from "@/lib/catalog-cache";
 import { db } from "@/lib/db/drizzle";
 import { authors, books, bookToAuthor } from "@/lib/db/schema";
 
@@ -148,7 +149,11 @@ function getPreviewCount(filters: BookFilters): number {
   return filterPreview(filters).length;
 }
 
-export async function getBooksPage(query: BookQuery): Promise<BookSummary[]> {
+export const getBooksPage = withTtlCache(
+  "getBooksPage",
+  async function getBooksPage(
+  query: BookQuery,
+): Promise<BookSummary[]> {
   const database = db;
   if (!database) return getPreviewBooks(query);
 
@@ -170,9 +175,13 @@ export async function getBooksPage(query: BookQuery): Promise<BookSummary[]> {
     const { isbn: _isbn, ...summary } = withBookCover(book);
     return summary;
   });
-}
+});
 
-export async function getBooksCount(filters: BookFilters): Promise<number> {
+export const getBooksCount = withTtlCache(
+  "getBooksCount",
+  async function getBooksCount(
+  filters: BookFilters,
+): Promise<number> {
   const database = db;
   if (!database) return getPreviewCount(filters);
 
@@ -181,9 +190,13 @@ export async function getBooksCount(filters: BookFilters): Promise<number> {
     .from(books)
     .where(getWhereClause(filters));
   return total;
-}
+});
 
-export async function getBookById(id: string): Promise<BookDetails> {
+export const getBookById = withTtlCache(
+  "getBookById",
+  async function getBookById(
+  id: string,
+): Promise<BookDetails> {
   const bookId = Number(id);
   if (!Number.isInteger(bookId)) throw new Error("Invalid book ID");
 
@@ -220,4 +233,4 @@ export async function getBookById(id: string): Promise<BookDetails> {
   const book = result[0];
   if (!book) throw new Error("Book not found");
   return withBookCover(book);
-}
+});

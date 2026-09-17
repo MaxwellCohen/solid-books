@@ -1,11 +1,41 @@
 import { Title } from "@solidjs/meta";
+import { useLocation } from "@solidjs/router";
+import { Loading, Show } from "solid-js";
 import { env } from "virtual:env/client";
 import { MobileBookSidebar, MobileBookSidebarTrigger } from "@/components/mobile-book-sidebar";
 import { ThemeProvider } from "@/components/theme/theme";
 import { BookSearch } from "@/features/book/components/book-search";
 import { BookSidebar } from "@/features/book/components/book-sidebar";
+import { BookDetailSkeleton } from "@/features/book/components/book-detail";
+import { BookGridSkeleton } from "@/features/book/components/book-grid";
+import { BookPaginationSkeleton } from "@/features/book/components/book-pagination";
 import { Router } from "./router";
 import "./app.css";
+
+function RouteShellFallback() {
+  const location = useLocation();
+  const isBookDetail = () => /^\/\d+\/?$/.test(location.pathname);
+
+  return (
+    <Show
+      when={isBookDetail()}
+      fallback={
+        <div class="flex min-h-0 flex-1 flex-col">
+          <div class="flex-1 px-4 py-5 sm:px-6">
+            <BookGridSkeleton />
+          </div>
+          <footer class="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
+            <BookPaginationSkeleton />
+          </footer>
+        </div>
+      }
+    >
+      <div class="flex flex-1 flex-col px-4 py-5 sm:px-6">
+        <BookDetailSkeleton />
+      </div>
+    </Show>
+  );
+}
 
 export default function App() {
   return (
@@ -26,7 +56,9 @@ export default function App() {
                 </header>
 
                 <main class="flex min-w-0 flex-1 flex-col">
-                  {props.children}
+                  <Loading fallback={<RouteShellFallback />}>
+                    {props.children}
+                  </Loading>
                 </main>
               </div>
             </div>

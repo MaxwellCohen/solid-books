@@ -6,6 +6,7 @@ import type { BookDetails } from "@/features/book/book-queries";
 import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, PRIORITY_COVER_COUNT } from "@/features/book/book-constants";
 import { BookCoverPreloads } from "./book-cover-preloads";
 import { BookGrid } from "./book-grid";
+import Document from "@/Document";
 import Home from "@/routes/index";
 import BookPage from "@/routes/[id]";
 
@@ -55,9 +56,17 @@ test.each(["/?search=Dune", "/1"])(
       ],
     });
     const errors: unknown[] = [];
-    const stream = renderToStream(() => <Router url={url} />, {
-      onError: (error) => errors.push(error),
-    });
+    const stream = renderToStream(
+      () => (
+        <Document>
+          <aside data-layout="chrome">Solid Books</aside>
+          <Router url={url} />
+        </Document>
+      ),
+      {
+        onError: (error) => errors.push(error),
+      },
+    );
     const reader = stream.readable.getReader();
     const decoder = new TextDecoder();
     const first = await reader.read();
@@ -72,7 +81,11 @@ test.each(["/?search=Dune", "/1"])(
       html += decoder.decode(chunk.value, { stream: true });
     }
 
+    expect(shell).toContain("<html");
+    expect(shell).toContain('data-layout="chrome"');
     expect(shell).toContain("skeleton-subtle");
+    expect(shell).not.toContain("fonts.googleapis.com");
+    expect(shell).not.toContain("Dune");
     expect(imagePreloads(shell)).toEqual([]);
     expect(imagePreloads(html)).toEqual([
       "https://images.gr-assets.com/books/1426192671l/53732.jpg",
