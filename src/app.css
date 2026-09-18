@@ -1,5 +1,3 @@
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
 @theme {
@@ -25,8 +23,8 @@
   --color-danger: #e54848;
   --color-warning: #f5a524;
 
-  --font-sans: "Geist Variable", system-ui, -apple-system, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --tracking-tight: -0.02em;
   --tracking-wide: 0.04em;

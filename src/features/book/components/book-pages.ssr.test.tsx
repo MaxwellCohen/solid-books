@@ -84,7 +84,7 @@ test.each(["/?search=Dune", "/1"])(
     expect(shell).toContain("<html");
     expect(shell).toContain('data-layout="chrome"');
     expect(shell).toContain("skeleton-subtle");
-    expect(shell).not.toContain("fonts.googleapis.com");
+    expect(shell).toContain("fonts.googleapis.com");
     expect(shell).not.toContain("Dune");
     expect(imagePreloads(shell)).toEqual([]);
     expect(imagePreloads(html)).toEqual([
