@@ -2,7 +2,10 @@
 export const CATALOG_CACHE_REVALIDATE_SECONDS = 3600;
 export const CATALOG_CACHE_EXPIRE_SECONDS = 86400;
 
-export const HTML_CACHE_CONTROL = `public, s-maxage=${CATALOG_CACHE_REVALIDATE_SECONDS}, stale-while-revalidate=${CATALOG_CACHE_EXPIRE_SECONDS}`;
+/** Match next-books HTML Cache-Control per host (Vercel vs Netlify/Cloudflare/local). */
+export const VERCEL_DOCUMENT_CACHE_CONTROL = "public, max-age=0, must-revalidate";
+export const PRIVATE_DOCUMENT_CACHE_CONTROL =
+  "private, no-cache, no-store, max-age=0, must-revalidate";
 
 const TTL_MS = CATALOG_CACHE_REVALIDATE_SECONDS * 1000;
 
@@ -17,6 +20,11 @@ function isVercel() {
 
 function isNetlify() {
   return typeof process !== "undefined" && Boolean(process.env.NETLIFY) && !process.env.CLOUDFLARE;
+}
+
+/** Public document Cache-Control matching next-books on this host. */
+export function hostDocumentCacheControl(): string {
+  return isVercel() ? VERCEL_DOCUMENT_CACHE_CONTROL : PRIVATE_DOCUMENT_CACHE_CONTROL;
 }
 
 function memoryGet<T>(key: string): T | undefined {
@@ -35,26 +43,6 @@ function edgeRequest(key: string) {
 function edgeCache(): Cache | undefined {
   const cachesApi = (globalThis as typeof globalThis & { caches?: CacheStorage }).caches;
   return cachesApi?.default;
-}
-
-function delayFromRequest(request: Request): number {
-  try {
-    const delay = Number(new URL(request.url).searchParams.get("delay") ?? 0);
-    return Number.isFinite(delay) ? Math.max(0, delay) : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function isCacheableHtmlRequest(request: Request): boolean {
-  return request.method === "GET" && delayFromRequest(request) <= 0;
-}
-
-function applyHtmlCacheHeaders(headers: Headers) {
-  headers.set("Cache-Control", HTML_CACHE_CONTROL);
-  headers.set("CDN-Cache-Control", HTML_CACHE_CONTROL);
-  headers.set("Vercel-CDN-Cache-Control", HTML_CACHE_CONTROL);
-  headers.set("Netlify-CDN-Cache-Control", HTML_CACHE_CONTROL);
 }
 
 async function platformGet<T>(key: string): Promise<T | undefined> {
@@ -167,30 +155,4 @@ export function withTtlCache<Args extends unknown[], Result>(
   fn: (...args: Args) => Promise<Result>,
 ): (...args: Args) => Promise<Result> {
   return (...args: Args) => cacheLifeHours(`${name}:${JSON.stringify(args)}`, () => fn(...args));
-}
-
-export async function matchCachedHtml(request: Request): Promise<Response | undefined> {
-  if (!isCacheableHtmlRequest(request)) return;
-  const cache = edgeCache();
-  if (!cache) return;
-  try {
-    const hit = await cache.match(request);
-    return hit?.ok ? hit : undefined;
-  } catch {
-    return;
-  }
-}
-
-export async function storeCachedHtml(request: Request, response: Response): Promise<void> {
-  if (!isCacheableHtmlRequest(request) || !response.ok) return;
-  if (!response.headers.get("content-type")?.includes("text/html")) return;
-  const cache = edgeCache();
-  if (!cache) return;
-  try {
-    const copy = response.clone();
-    applyHtmlCacheHeaders(copy.headers);
-    await cache.put(request, copy);
-  } catch {
-    // Best-effort HTML edge cache.
-  }
 }
