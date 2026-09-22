@@ -1,5 +1,4 @@
-import { createMemo, createSignal, Show } from "solid-js";
-import { thumbHashToDataURL } from "thumbhash";
+import { createEffect, createMemo, createSignal, onCleanup, Show } from "solid-js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from "@/features/book/book-constants";
 import { loadBookCover } from "@/features/book/book-images";
@@ -14,16 +13,11 @@ type Props = {
   priority?: boolean;
 };
 
-function thumbhashUrl(hash: string | null) {
-  if (!hash) return undefined;
-  try {
-    const binary = atob(hash);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return thumbHashToDataURL(bytes);
-  } catch {
-    return undefined;
-  }
+function decodeThumbhash(hash: string, thumbHashToDataURL: (bytes: Uint8Array) => string) {
+  const binary = atob(hash);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return thumbHashToDataURL(bytes);
 }
 
 export function BookCover(props: Props) {
@@ -36,7 +30,32 @@ export function BookCover(props: Props) {
   const [failedSrc, setFailedSrc] = createSignal<string | null>(null, {
     name: "BookCover.failedSrc",
   });
-  const placeholder = () => thumbhashUrl(props.thumbhash);
+  const [placeholder, setPlaceholder] = createSignal<string | undefined>(undefined, {
+    name: "BookCover.placeholder",
+  });
+
+  createEffect(
+    () => props.thumbhash,
+    (hash) => {
+      if (!hash) {
+        setPlaceholder(undefined);
+        return;
+      }
+
+      let cancelled = false;
+      void import("thumbhash").then(({ thumbHashToDataURL }) => {
+        if (cancelled) return;
+        try {
+          setPlaceholder(decodeThumbhash(hash, thumbHashToDataURL));
+        } catch {
+          setPlaceholder(undefined);
+        }
+      });
+      onCleanup(() => {
+        cancelled = true;
+      });
+    },
+  );
 
   return (
     <div
