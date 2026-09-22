@@ -3,6 +3,7 @@ import { sharedConfig } from "solid-js";
 import {
   EMPTY_IMAGE_URL,
   getLargeBookImageUrl,
+  getOptimizedBookImageUrl,
   PRIORITY_COVER_COUNT,
 } from "./book-constants";
 
@@ -15,19 +16,26 @@ export function loadBookCover(
   imageUrl: string | null,
   priority = false,
 ): Cover | Promise<Cover> {
-  const src = getLargeBookImageUrl(imageUrl ?? EMPTY_IMAGE_URL);
+  const source = getLargeBookImageUrl(imageUrl ?? EMPTY_IMAGE_URL);
+  const src = getOptimizedBookImageUrl(source);
   // Asset readiness must not turn server-rendered content into a client-only
   // hole, or re-suspend content that is already visible during hydration.
-  if (isServer || sharedConfig.hydrating) return src;
+  if (isServer || sharedConfig.hydrating) return source;
 
   const cached = covers.get(src);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined) {
+    return cached instanceof Promise
+      ? cached.then((ready) => (ready ? source : null))
+      : cached
+        ? source
+        : null;
+  }
 
   const image = new Image();
   image.decoding = "async";
   image.fetchPriority = priority ? "high" : "auto";
   image.src = src;
-  if (image.complete) return image.naturalWidth > 0 ? src : null;
+  if (image.complete) return image.naturalWidth > 0 ? source : null;
 
   let timeout: ReturnType<typeof setTimeout>;
   const pending = Promise.race([
@@ -47,7 +55,7 @@ export function loadBookCover(
   if (covers.size > MAX_CACHED_COVERS) {
     covers.delete(covers.keys().next().value!);
   }
-  return pending;
+  return pending.then((ready) => (ready ? source : null));
 }
 
 export function preloadBookCovers<T extends { image_url: string | null }>(

@@ -4,9 +4,18 @@ import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import "@testing-library/jest-dom/vitest";
 import { createSignal, flush, For, Loading, sharedConfig } from "solid-js";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, PRIORITY_COVER_COUNT } from "@/features/book/book-constants";
+import {
+  EMPTY_IMAGE_URL,
+  getOptimizedBookImageUrl,
+  ITEMS_PER_PAGE,
+  PRIORITY_COVER_COUNT,
+} from "@/features/book/book-constants";
 import { COVER_REVEAL_TIMEOUT_MS, loadBookCover, preloadBookCovers } from "@/features/book/book-images";
 import { BookCover } from "./book-cover";
+
+function optimized(src: string) {
+  return getOptimizedBookImageUrl(src);
+}
 
 let requests: {
   src: string;
@@ -63,8 +72,8 @@ test("starts covers in parallel and holds Loading until every cover is decoded",
     flush();
 
     expect(requests.map((request) => request.src)).toEqual([
-      "https://images.gr-assets.com/books/123l/456.jpg",
-      "/second.jpg",
+      optimized("https://images.gr-assets.com/books/123l/456.jpg"),
+      optimized("/second.jpg"),
     ]);
     expect(screen.getByText("Loading covers")).toBeInTheDocument();
     expect(screen.queryAllByRole("img")).toHaveLength(0);
@@ -78,7 +87,10 @@ test("starts covers in parallel and holds Loading until every cover is decoded",
     await settleImages();
     expect(screen.queryByText("Loading covers")).not.toBeInTheDocument();
     expect(screen.getAllByRole("img")).toHaveLength(2);
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("src", requests[0].src);
+    expect(screen.getAllByRole("img")[0]).toHaveAttribute(
+      "src",
+      optimized("https://images.gr-assets.com/books/123l/456.jpg"),
+    );
     expect(screen.getAllByRole("img")[0]).toHaveAttribute("sizes", "33vw");
     expect(screen.getAllByRole("img")[0]).toHaveAttribute("loading", "eager");
     expect(screen.getAllByRole("img")[0]).toHaveAttribute("fetchpriority", "high");
@@ -118,7 +130,7 @@ test("a failed cover releases Loading without hiding the other covers", async ()
     screen.getByRole("img", { name: "Cover unavailable for Broken book" }),
   ).toBeInTheDocument();
   expect(screen.getByRole("img", { name: "Good book" })).toHaveAttribute(
-    "src", "/good.jpg",
+    "src", optimized("/good.jpg"),
   );
 });
 
@@ -130,12 +142,12 @@ test("also waits for the no-photo image when a book has no cover URL", async () 
   ));
   flush();
 
-  expect(requests[0].src).toBe(EMPTY_IMAGE_URL);
+  expect(requests[0].src).toBe(optimized(EMPTY_IMAGE_URL));
   expect(screen.getByText("Loading cover")).toBeInTheDocument();
   requests[0].resolve();
   await settleImages();
   expect(screen.getByRole("img", { name: "No cover" })).toHaveAttribute(
-    "src", EMPTY_IMAGE_URL,
+    "src", optimized(EMPTY_IMAGE_URL),
   );
 });
 
@@ -156,22 +168,24 @@ test("keeps the previous decoded cover while replacing it and ignores stale deco
     setSrc("/replace-third.jpg");
     flush();
     expect(requests.map((request) => request.src)).toEqual([
-      "/replace-first.jpg", "/replace-second.jpg", "/replace-third.jpg",
+      optimized("/replace-first.jpg"),
+      optimized("/replace-second.jpg"),
+      optimized("/replace-third.jpg"),
     ]);
     expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-first.jpg",
+      "src", optimized("/replace-first.jpg"),
     );
 
     requests[1].resolve();
     await settleImages();
     expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-first.jpg",
+      "src", optimized("/replace-first.jpg"),
     );
 
     requests[2].resolve();
     await settleImages();
     expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-third.jpg",
+      "src", optimized("/replace-third.jpg"),
     );
     expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
   }, { scenario: "book-cover-source-change" });
@@ -194,7 +208,9 @@ test("a preloaded cover renders immediately without a second decode", async () =
 
   expect(requests).toHaveLength(1);
   expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Preloaded" })).toHaveAttribute("src", "/preloaded.jpg");
+  expect(screen.getByRole("img", { name: "Preloaded" })).toHaveAttribute(
+    "src", optimized("/preloaded.jpg"),
+  );
 });
 
 test("a stalled cover releases the whole boundary after 500 ms and can still report an error", async () => {
@@ -215,7 +231,9 @@ test("a stalled cover releases the whole boundary after 500 ms and can still rep
   flush();
   expect(screen.queryByText("Loading covers")).not.toBeInTheDocument();
   expect(screen.getAllByRole("img")).toHaveLength(2);
-  expect(screen.getByRole("img", { name: "Slow" })).toHaveAttribute("src", "/slow.jpg");
+  expect(screen.getByRole("img", { name: "Slow" })).toHaveAttribute(
+    "src", optimized("/slow.jpg"),
+  );
   expect(vi.getTimerCount()).toBe(0);
 
   // A late decode must not re-suspend the boundary or restart its timeout.
@@ -225,7 +243,9 @@ test("a stalled cover releases the whole boundary after 500 ms and can still rep
   fireEvent.error(screen.getByRole("img", { name: "Slow" }));
   flush();
   expect(screen.getByRole("img", { name: "Cover unavailable for Slow" })).toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Fast" })).toHaveAttribute("src", "/fast.jpg");
+  expect(screen.getByRole("img", { name: "Fast" })).toHaveAttribute(
+    "src", optimized("/fast.jpg"),
+  );
 });
 
 test("lazy covers render immediately, without preloading or holding Loading", () => {
@@ -239,7 +259,7 @@ test("lazy covers render immediately, without preloading or holding Loading", ()
   expect(requests).toHaveLength(0);
   expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
   const image = screen.getByRole("img", { name: "Lazy" });
-  expect(image).toHaveAttribute("src", "/lazy.jpg");
+  expect(image).toHaveAttribute("src", optimized("/lazy.jpg"));
   expect(image).toHaveAttribute("loading", "lazy");
   expect(image).not.toHaveAttribute("fetchpriority");
 
@@ -260,7 +280,9 @@ test("already complete covers do not decode or suspend", () => {
 
   expect(requests).toHaveLength(0);
   expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Cached" })).toHaveAttribute("src", "/browser-cached.jpg");
+  expect(screen.getByRole("img", { name: "Cached" })).toHaveAttribute(
+    "src", optimized("/browser-cached.jpg"),
+  );
 });
 
 test("hydration skips decoding without marking the image ready for later navigation", () => {
@@ -276,6 +298,7 @@ test("hydration skips decoding without marking the image ready for later navigat
   const pending = loadBookCover("/hydrated.jpg");
   expect(pending).toBeInstanceOf(Promise);
   expect(requests).toHaveLength(1);
+  expect(requests[0].src).toBe(optimized("/hydrated.jpg"));
   requests[0].resolve();
   return pending;
 });
@@ -287,7 +310,7 @@ test("grid preloading starts only priority covers in parallel and preserves the 
   const pending = preloadBookCovers(books);
 
   expect(requests.map((request) => request.src)).toEqual(
-    books.slice(0, PRIORITY_COVER_COUNT).map((book) => book.image_url),
+    books.slice(0, PRIORITY_COVER_COUNT).map((book) => optimized(book.image_url)),
   );
   requests.forEach((request) => request.resolve());
   expect(await pending).toBe(books);

@@ -1,8 +1,24 @@
+import { transform } from "unpic/providers/ipx";
+
 export const EMPTY_IMAGE_URL =
   'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
 
+/** Max cover dimensions passed to Unpic/IPX (2:3 aspect). */
+export const COVER_IMAGE_WIDTH = 400;
+export const COVER_IMAGE_HEIGHT = 600;
+
 export function getLargeBookImageUrl(url: string): string {
   return url.replace(/^(https:\/\/images\.gr-assets\.com\/books\/\d+)m(\/\d+\.jpg)$/, '$1l$2');
+}
+
+/** IPX URL for a cover at the app's default optimized size (used for preloads). */
+export function getOptimizedBookImageUrl(
+  url: string,
+  width = COVER_IMAGE_WIDTH,
+  height = COVER_IMAGE_HEIGHT,
+): string {
+  const src = getLargeBookImageUrl(url);
+  return transform(src, { width, height }, { baseURL: "/_ipx" });
 }
 
 export const ITEMS_PER_PAGE = 28;

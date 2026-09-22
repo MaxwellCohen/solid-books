@@ -13,6 +13,7 @@ export default function Document(props: ParentProps) {
         <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="preconnect" href="https://images.gr-assets.com" />
         <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin="" />
         <title>Solid Books</title>
         <script>{themeScript}</script>

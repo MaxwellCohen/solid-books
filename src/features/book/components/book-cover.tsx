@@ -1,6 +1,12 @@
 import { createEffect, createMemo, createSignal, onCleanup, Show } from "solid-js";
+import { Image } from "@/components/ui/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from "@/features/book/book-constants";
+import {
+  COVER_IMAGE_HEIGHT,
+  COVER_IMAGE_WIDTH,
+  EMPTY_IMAGE_URL,
+  getLargeBookImageUrl,
+} from "@/features/book/book-constants";
 import { loadBookCover } from "@/features/book/book-images";
 import { cn } from "@/lib/utils";
 
@@ -21,18 +27,25 @@ function decodeThumbhash(hash: string, thumbHashToDataURL: (bytes: Uint8Array) =
 }
 
 export function BookCover(props: Props) {
+  const source = createMemo(
+    () => getLargeBookImageUrl(props.src ?? EMPTY_IMAGE_URL),
+    { name: "BookCover.source" },
+  );
   const readySrc = createMemo(
-    () => props.priority
-      ? loadBookCover(props.src, true)
-      : getLargeBookImageUrl(props.src ?? EMPTY_IMAGE_URL),
+    () => (props.priority ? loadBookCover(props.src, true) : source()),
     { name: "BookCover.readySrc" },
   );
-  const [failedSrc, setFailedSrc] = createSignal<string | null>(null, {
-    name: "BookCover.failedSrc",
-  });
+  const [failed, setFailed] = createSignal(false, { name: "BookCover.failed" });
   const [placeholder, setPlaceholder] = createSignal<string | undefined>(undefined, {
     name: "BookCover.placeholder",
   });
+
+  createEffect(
+    () => source(),
+    () => {
+      setFailed(false);
+    },
+  );
 
   createEffect(
     () => props.thumbhash,
@@ -74,7 +87,7 @@ export function BookCover(props: Props) {
       }
     >
       <Show
-        when={readySrc() !== failedSrc() ? readySrc() : null}
+        when={!failed() ? readySrc() : null}
         fallback={
           <div
             role="img"
@@ -86,15 +99,19 @@ export function BookCover(props: Props) {
         }
       >
         {(src) => (
-          <img
+          <Image
             alt={props.title}
             class="absolute inset-0 h-full w-full object-cover"
             decoding="async"
-            loading={props.priority ? "eager" : "lazy"}
-            fetchpriority={props.priority ? "high" : undefined}
+            layout="constrained"
+            objectFit="cover"
+            priority={props.priority}
             sizes={props.sizes}
             src={src()}
-            onError={(event) => setFailedSrc(event.currentTarget.getAttribute("src"))}
+            unstyled
+            width={COVER_IMAGE_WIDTH}
+            height={COVER_IMAGE_HEIGHT}
+            onError={() => setFailed(true)}
           />
         )}
       </Show>

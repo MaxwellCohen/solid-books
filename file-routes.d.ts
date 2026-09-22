@@ -49,6 +49,13 @@ declare module "virtual:file-routes" {
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
+    },
+    {
+      path: "/_ipx/*path";
+      page: false;
+      $GET: FileRouteLazyRef<typeof import("./src/routes/_ipx/[...path]")>;
+      $HEAD: FileRouteLazyRef<typeof import("./src/routes/_ipx/[...path]")>;
+      $$route?: undefined;
     }
   ];
   export default routes;

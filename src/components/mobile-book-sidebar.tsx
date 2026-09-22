@@ -25,7 +25,7 @@ export function MobileBookSidebar(props: {
       <Show when={isOpen()}>
         <div
           aria-hidden="true"
-          class="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] md:hidden"
+          class="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={() => setIsOpen(false)}
         />
         <aside

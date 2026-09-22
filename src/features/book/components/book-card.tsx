@@ -12,7 +12,6 @@ const GRID_SIZES =
 
 type Props = {
   book: BookSummary;
-  eagerPrefetch?: boolean;
   searchParams: SearchParams;
   priority: boolean;
 };
@@ -28,7 +27,6 @@ export function BookCard(props: Props) {
     <FastLink
       class="focus-visible:ring-action focus-visible:ring-offset-surface dark:focus-visible:ring-offset-surface-dark group relative block rounded-md transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.04] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       href={href()}
-      prefetch={props.eagerPrefetch}
     >
       <BookCover
         class="group-hover:shadow-soft transition-shadow"
