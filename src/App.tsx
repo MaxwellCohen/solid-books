@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/theme/theme";
 import { BookSearch } from "@/features/book/components/book-search";
 import { BookSidebar } from "@/features/book/components/book-sidebar";
 import { Router } from "./router";
-import "./app.css";
 
 const SHELL_PLACEHOLDERS = Array.from({ length: 12 }, (_, index) => index);
 

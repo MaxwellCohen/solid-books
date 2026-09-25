@@ -1,6 +1,7 @@
 import type { ParentProps } from "solid-js";
 import { HydrationScript } from "@solidjs/web";
 import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import appCss from "./app.css?inline";
 
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||((t==="system"||!t)&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
 
@@ -16,6 +17,9 @@ export default function Document(props: ParentProps) {
         <link rel="preconnect" href="https://images.gr-assets.com" />
         <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin="" />
         <title>Solid Books</title>
+        {/* Inline like next-books `experimental.inlineCss` so the shell paints
+            from the first HTML chunk without a stylesheet round-trip. */}
+        <style>{appCss}</style>
         <script>{themeScript}</script>
         <HydrationScript />
       </head>
