@@ -5,6 +5,12 @@ export function getLargeBookImageUrl(url: string): string {
   return url.replace(/^(https:\/\/images\.gr-assets\.com\/books\/\d+)m(\/\d+\.jpg)$/, '$1l$2');
 }
 
+// Rendered cover widths; keep in sync with the grid in book-grid.tsx
+// (px-4/sm:px-6 padding, gap-4, w-72 sidebar from md) and BookDetail.
+export const GRID_COVER_SIZES =
+  "(min-width: 1280px) calc((100vw - 432px) / 7), (min-width: 1024px) calc((100vw - 416px) / 6), (min-width: 768px) calc((100vw - 400px) / 5), (min-width: 640px) calc((100vw - 96px) / 4), calc((100vw - 64px) / 3)";
+export const DETAIL_COVER_SIZES = "(min-width: 768px) 18rem, (min-width: 640px) 12rem, 10rem";
+
 export const ITEMS_PER_PAGE = 28;
 // Match the demo's eager window; the remaining covers load on scroll.
 export const PRIORITY_COVER_COUNT = 10;

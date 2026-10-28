@@ -3,12 +3,10 @@ import {
   BookCover,
   BookCoverSkeleton,
 } from "@/features/book/components/book-cover";
+import { GRID_COVER_SIZES } from "@/features/book/book-constants";
 import { FastLink } from "@/components/ui/fast-link";
 import { buildHref } from "@/lib/url-state";
 import type { SearchParams } from "@/lib/url-state";
-
-const GRID_SIZES =
-  "(min-width: 1280px) 14vw, (min-width: 1024px) 16vw, (min-width: 768px) 20vw, (min-width: 640px) 25vw, 33vw";
 
 type Props = {
   book: BookSummary;
@@ -33,7 +31,7 @@ export function BookCard(props: Props) {
       <BookCover
         class="group-hover:shadow-soft transition-shadow"
         priority={props.priority}
-        sizes={GRID_SIZES}
+        sizes={GRID_COVER_SIZES}
         src={props.book.image_url}
         thumbhash={props.book.thumbhash}
         title={props.book.title}

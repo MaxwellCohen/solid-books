@@ -1,8 +1,10 @@
 import { isServer } from "@solidjs/web";
 import { sharedConfig } from "solid-js";
+import { imageSrcset } from "@/lib/image-cdn";
 import {
   EMPTY_IMAGE_URL,
   getLargeBookImageUrl,
+  GRID_COVER_SIZES,
   PRIORITY_COVER_COUNT,
 } from "./book-constants";
 
@@ -14,6 +16,7 @@ export const COVER_REVEAL_TIMEOUT_MS = 500;
 export function loadBookCover(
   imageUrl: string | null,
   priority = false,
+  sizes = GRID_COVER_SIZES,
 ): Cover | Promise<Cover> {
   const src = getLargeBookImageUrl(imageUrl ?? EMPTY_IMAGE_URL);
   // Asset readiness must not turn server-rendered content into a client-only
@@ -26,6 +29,13 @@ export function loadBookCover(
   const image = new Image();
   image.decoding = "async";
   image.fetchPriority = priority ? "high" : "auto";
+  // Same srcset/sizes as the rendered <img>, so the browser picks (and
+  // caches) the same candidate instead of downloading a second copy.
+  const srcset = imageSrcset(src);
+  if (srcset) {
+    image.sizes = sizes;
+    image.srcset = srcset;
+  }
   image.src = src;
   if (image.complete) return image.naturalWidth > 0 ? src : null;
 
@@ -53,7 +63,9 @@ export function loadBookCover(
 export function preloadBookCovers<T extends { image_url: string | null }>(
   books: T[],
 ): T[] | Promise<T[]> {
-  const pending = books.slice(0, PRIORITY_COVER_COUNT).map(preloadBookCover);
+  const pending = books
+    .slice(0, PRIORITY_COVER_COUNT)
+    .map((book) => preloadBookCover(book, GRID_COVER_SIZES));
   return pending.some((book) => book instanceof Promise)
     ? Promise.all(pending).then(() => books)
     : books;
@@ -61,7 +73,8 @@ export function preloadBookCovers<T extends { image_url: string | null }>(
 
 export function preloadBookCover<T extends { image_url: string | null }>(
   book: T,
+  sizes: string,
 ): T | Promise<T> {
-  const cover = loadBookCover(book.image_url, true);
+  const cover = loadBookCover(book.image_url, true, sizes);
   return cover instanceof Promise ? cover.then(() => book) : book;
 }

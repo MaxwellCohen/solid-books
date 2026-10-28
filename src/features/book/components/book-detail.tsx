@@ -10,6 +10,7 @@ import {
   GlobeIcon,
   HashIcon,
 } from "@/components/ui/icons";
+import { DETAIL_COVER_SIZES } from "@/features/book/book-constants";
 import { formatCount, getLanguageLabel } from "@/features/book/book-utils";
 import {
   BookCover,
@@ -18,10 +19,8 @@ import {
 import { Title } from "@solidjs/meta";
 import { preloadBookCover } from "@/features/book/book-images";
 
-const DETAIL_SIZES = "(min-width: 768px) 18rem, 60vw";
-
 export function BookDetail(props: { book: BookDetails }) {
-  const book = createMemo(() => preloadBookCover(props.book), {
+  const book = createMemo(() => preloadBookCover(props.book, DETAIL_COVER_SIZES), {
     name: "BookDetail.readyBook",
   });
   const rating = () => Number(book().average_rating);
@@ -34,7 +33,7 @@ export function BookDetail(props: { book: BookDetails }) {
         <BookCover
           class="shadow-soft ring-divider/70 dark:ring-divider-dark/70 ring-1"
           priority
-          sizes={DETAIL_SIZES}
+          sizes={DETAIL_COVER_SIZES}
           src={book().image_url}
           thumbhash={book().thumbhash}
           title={book().title}

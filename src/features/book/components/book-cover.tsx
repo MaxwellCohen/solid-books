@@ -3,6 +3,7 @@ import { thumbHashToDataURL } from "thumbhash";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from "@/features/book/book-constants";
 import { loadBookCover } from "@/features/book/book-images";
+import { imageSrcset } from "@/lib/image-cdn";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -13,6 +14,10 @@ type Props = {
   class?: string;
   priority?: boolean;
 };
+
+// Intrinsic 2:3 box for the browser; CSS sizes the image to its container.
+const COVER_WIDTH = 320;
+const COVER_HEIGHT = 480;
 
 function thumbhashUrl(hash: string | null) {
   if (!hash) return undefined;
@@ -29,7 +34,7 @@ function thumbhashUrl(hash: string | null) {
 export function BookCover(props: Props) {
   const readySrc = createMemo(
     () => props.priority
-      ? loadBookCover(props.src, true)
+      ? loadBookCover(props.src, true, props.sizes)
       : getLargeBookImageUrl(props.src ?? EMPTY_IMAGE_URL),
     { name: "BookCover.readySrc" },
   );
@@ -73,7 +78,10 @@ export function BookCover(props: Props) {
             decoding="async"
             loading={props.priority ? "eager" : "lazy"}
             fetchpriority={props.priority ? "high" : undefined}
+            width={COVER_WIDTH}
+            height={COVER_HEIGHT}
             sizes={props.sizes}
+            srcset={imageSrcset(src())}
             src={src()}
             onError={(event) => setFailedSrc(event.currentTarget.getAttribute("src"))}
           />

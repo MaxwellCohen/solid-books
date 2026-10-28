@@ -4,8 +4,14 @@ import { nitro } from "nitro/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vitest/config";
 import solid from "@solidjs/vite-plugin";
+import { detectImageCdn, IMAGE_HOSTS, IMAGE_WIDTHS } from "./src/lib/image-cdn-config";
+
+const imageCdn = detectImageCdn(process.env);
 
 export default defineConfig({
+  define: {
+    "import.meta.env.VITE_IMAGE_CDN": JSON.stringify(imageCdn),
+  },
   plugins: [
     tailwindcss(),
     solid({
@@ -17,11 +23,32 @@ export default defineConfig({
       serverFunctions: { configure: "./src/server-config.ts" },
     }),
     fileRoutes({ httpMethods: true, types: true }),
-    nitro(
-      process.env.CLOUDFLARE || process.env.WORKERS_CI
+    nitro({
+      ...(process.env.CLOUDFLARE || process.env.WORKERS_CI
         ? { preset: "cloudflare_module" }
-        : undefined,
-    ),
+        : {}),
+      // Host image optimizers for cover srcsets (see src/lib/image-cdn.ts).
+      // Each preset only reads its own key.
+      vercel: {
+        config: {
+          version: 3,
+          images: {
+            sizes: IMAGE_WIDTHS,
+            domains: [],
+            remotePatterns: IMAGE_HOSTS.map((hostname) => ({ protocol: "https", hostname })),
+            formats: ["image/avif", "image/webp"],
+            minimumCacheTTL: 60 * 60 * 24 * 30,
+          },
+        },
+      },
+      netlify: {
+        config: {
+          images: {
+            remote_images: IMAGE_HOSTS.map((host) => `https://${host.replaceAll(".", "\\.")}/.*`),
+          },
+        },
+      },
+    }),
   ],
   resolve: {
     alias: {
