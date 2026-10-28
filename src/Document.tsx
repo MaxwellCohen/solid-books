@@ -1,6 +1,7 @@
 import type { ParentProps } from "solid-js";
-import { HydrationScript } from "@solidjs/web";
+import { HydrationScript, NoHydration } from "@solidjs/web";
 import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import appCss from "./app.css?inline";
 
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||((t==="system"||!t)&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
 
@@ -17,6 +18,13 @@ export default function Document(props: ParentProps) {
             critical path, and the latin face starts downloading with the HTML. */}
         <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin="" />
         <title>Solid Books</title>
+        {/* The whole stylesheet is ~8 KiB gzip; inlining it lets the first
+            HTML chunk paint without a render-blocking CSS round-trip.
+            NoHydration leaves the server node in place, so the CSS string
+            stays out of the client bundle. */}
+        <NoHydration>
+          <style>{import.meta.env.SSR ? appCss : ""}</style>
+        </NoHydration>
         <script>{themeScript}</script>
         <HydrationScript />
       </head>
