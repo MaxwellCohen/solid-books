@@ -1,5 +1,6 @@
 import type { ParentProps } from "solid-js";
 import { HydrationScript } from "@solidjs/web";
+import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
 
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||((t==="system"||!t)&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
 
@@ -12,16 +13,9 @@ export default function Document(props: ParentProps) {
         <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400&display=swap"
-          rel="stylesheet"
-        />
+        {/* Self-hosted variable Geist: no cross-origin stylesheet on the
+            critical path, and the latin face starts downloading with the HTML. */}
+        <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin="" />
         <title>Solid Books</title>
         <script>{themeScript}</script>
         <HydrationScript />
