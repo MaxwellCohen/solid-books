@@ -14,13 +14,16 @@
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "db:seed": "tsx src/lib/db/seed-authors.ts && tsx src/lib/db/seed-books.ts",
     "preview:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 dev",
-    "deploy:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 deploy"
+    "deploy:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 deploy",
+    "test:e2e": "playwright test",
+    "perf:budgets": "node scripts/perf-budgets.mjs"
   },
   "license": "MIT",
   "engines": {
     "node": ">=24"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@solidjs/diagnostics": "^2.0.0-rc.6",
     "@solidjs/testing-library": "1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.39",

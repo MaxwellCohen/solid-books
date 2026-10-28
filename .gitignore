@@ -28,3 +28,7 @@ gitignore
 .DS_Store
 Thumbs.db
 .neon
+
+# Playwright
+/test-results
+/playwright-report

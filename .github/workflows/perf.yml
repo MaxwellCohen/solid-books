@@ -1,0 +1,33 @@
+name: Performance
+
+on:
+  push:
+    branches: [main, optimized]
+  pull_request:
+
+jobs:
+  budgets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run
+      # Build with an image CDN so the srcset path is what gets checked.
+      - run: pnpm build
+        env:
+          IMAGE_CDN: vercel
+      - run: pnpm perf:budgets
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
