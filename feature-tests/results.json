@@ -1,14 +1,14 @@
 {
   "framework": "solidstart",
   "repo": "solid-books",
-  "commit": "5048c457d4b11e75147fb445de7247197f718710",
-  "ranAt": "2026-11-26T04:58:27.871Z",
+  "commit": "f70f700a38fe18565e872b7ab1ba1bbe65ffbc8c",
+  "ranAt": "2026-11-26T15:29:27.353Z",
   "results": {
     "css-inlining": {
       "claimedLabel": "manual",
       "status": "pass",
       "method": "Vite `?inline` CSS import rendered in a <style> inside <NoHydration> (hand-rolled, per the cell)",
-      "evidence": "HTML has 2 inline <style> blocks (route one: 56 B incl. .ft-inline-marker), 0 <link rel=stylesheet>, 0 CSS requests, outline rgb(1, 2, 3) applied, CSS not in 14 client JS files",
+      "evidence": "HTML has 2 inline <style> blocks (route one: 56 B incl. .ft-inline-marker), 0 <link rel=stylesheet>, 0 CSS requests, outline rgb(1, 2, 3) applied, CSS not in 10 client JS files",
       "test": "feature-tests/css-inlining.spec.ts"
     },
     "font-optimization": {
@@ -37,21 +37,21 @@
       "claimedLabel": "first-party",
       "status": "pass",
       "method": "@solidjs/router createRouter preloadLinks (default on) preloading a plain <a> on hover",
-      "evidence": "on hover (before click): /assets/prefetch-target-D-q_Gc2L.js + 1 /_server data request(s); after click: 0 more for the target",
+      "evidence": "on hover (before click): /assets/prefetch-target-DJTni93J.js + 1 /_server data request(s); after click: 0 more for the target",
       "test": "feature-tests/route-prefetching.spec.ts"
     },
     "islands": {
       "claimedLabel": "experimental",
       "status": "pass",
       "method": "@solidjs/vite-plugin serverFunctions.components (experimental server components) + a normal hydrated island",
-      "evidence": "\"use server\" component rendered inline (marker in HTML and DOM), marker absent from all 14 JS responses, island counter works after hydration (Island clicks: 1), 2 /_server requests",
+      "evidence": "\"use server\" component rendered inline (marker in HTML and DOM), marker absent from all 10 JS responses, island counter works after hydration (Island clicks: 1), 2 /_server requests",
       "test": "feature-tests/islands.spec.ts"
     },
     "render-modes": {
       "claimedLabel": "first-party",
       "status": "pass",
       "method": "nitro({ prerender: { routes } }) for one route, default per-request SSR for another",
-      "evidence": "nitro.prerender wrote .output/public/feature-tests/render-modes/prerendered/index.html; its stamp 2026-11-26T04:56:46.931Z is served unchanged on 2 requests; /ssr stamp changed per request (2026-11-26T04:58:23.199Z → 2026-11-26T04:58:23.257Z)",
+      "evidence": "nitro.prerender wrote .output/public/feature-tests/render-modes/prerendered/index.html; its stamp 2026-11-26T15:29:00.623Z is served unchanged on 2 requests; /ssr stamp changed per request (2026-11-26T15:29:25.075Z → 2026-11-26T15:29:25.131Z)",
       "test": "feature-tests/render-modes.spec.ts"
     },
     "reactivity": {
@@ -65,14 +65,14 @@
       "claimedLabel": "third-party",
       "status": "pass",
       "method": "rollup-plugin-visualizer behind ANALYZE=1 (client environment)",
-      "evidence": "ANALYZE=1 vite build wrote feature-tests/.tmp/bundle-stats.html (262 KiB treemap listing client chunks, e.g. prefetch-target)",
+      "evidence": "ANALYZE=1 vite build wrote feature-tests/.tmp/bundle-stats.html (260 KiB treemap listing client chunks, e.g. prefetch-target)",
       "test": "feature-tests/bundle-analysis.spec.ts"
     },
     "third-party-scripts": {
       "claimedLabel": "manual",
       "status": "pass",
       "method": "inline load + requestIdleCallback loader injecting a local stand-in script (cell's example)",
-      "evidence": "no third-party <script src> in SSR HTML (only an inline load+requestIdleCallback loader); script ran at 446 ms, after loadEventEnd 173 ms and FCP 200 ms; global __ftThirdParty set",
+      "evidence": "no third-party <script src> in SSR HTML (only an inline load+requestIdleCallback loader); script ran at 123 ms, after loadEventEnd 56 ms and FCP 68 ms; global __ftThirdParty set",
       "test": "feature-tests/third-party-scripts.spec.ts"
     },
     "multi-host-deployment": {
