@@ -14,7 +14,7 @@ export default defineConfig({
         devtools: false,
       },
       ssr: true,
-      serverFunctions: { configure: "./src/server-config.ts" },
+      serverFunctions: { serverSetup: "./src/server-config.ts" },
     }),
     fileRoutes({ httpMethods: true, types: true }),
     nitro(

@@ -13,3 +13,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - solid-js
   - '@solidjs/*'
+  - vite@8.4.0
