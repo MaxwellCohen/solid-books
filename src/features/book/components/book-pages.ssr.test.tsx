@@ -149,7 +149,11 @@ test("a missing book keeps its error state and emits no cover hint", async () =>
     onError: (error) => errors.push(error),
   });
 
-  expect(errors).toEqual([]);
+  // Solid 2.0 stable reports the rejection contained by the preload <Loading>
+  // to onError (SSR_RENDER_ERROR_CONTAINED); <Errored> still renders it.
+  expect(errors.map((error) => (error as Error).message)).toEqual([
+    "Book not found",
+  ]);
   expect(html).toContain("Book not found");
   expect(imagePreloads(html)).toEqual([]);
 });
