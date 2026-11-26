@@ -1,5 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { env } from "virtual:env/client";
+import { env } from "virtual:solid-env/client";
 import { MobileBookSidebar, MobileBookSidebarTrigger } from "@/components/mobile-book-sidebar";
 import { ThemeProvider } from "@/components/theme/theme";
 import { BookSearch } from "@/features/book/components/book-search";

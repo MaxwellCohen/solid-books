@@ -1,6 +1,6 @@
 import { FtPage } from "@/feature-tests/ft-page";
 
-// 1st-party: createRouter's preloadLinks (default true) preloads a plain
+// 1st-party: createRouter's preloadLinks: intentPreload() preloads a plain
 // <a>'s route code and its route.preload data on hover/focus.
 export default function RoutePrefetching() {
   return (

@@ -32,7 +32,7 @@ export default defineConfig({
       },
       ssr: true,
       // components: experimental server components (feature-tests/islands), off unless FT_COMPONENTS=1.
-      serverFunctions: { configure: "./src/server-config.ts", ...(ftComponents ? { components: true } : {}) },
+      serverFunctions: { serverSetup: "./src/server-config.ts", ...(ftComponents ? { components: true } : {}) },
     }),
     // @solidjs/image: build-time resizing for `?image` imports (feature-tests/image-pipeline).
     imagePlugin({
