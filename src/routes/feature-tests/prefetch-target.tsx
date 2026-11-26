@@ -3,9 +3,12 @@ import { createMemo, Loading } from "solid-js";
 import { getPrefetchTargetData } from "@/feature-tests/prefetch-data";
 import { FtPage } from "@/feature-tests/ft-page";
 
+// Loaded on demand: a static import here lands in the client entry (route
+// exports are bundled with the router), which would put the server-function
+// runtime on every page, including the home page.
 export const route = {
   preload: () => {
-    void getPrefetchTargetData();
+    void import("@/feature-tests/prefetch-data").then((m) => m.getPrefetchTargetData());
   },
 } satisfies RouteDefinition;
 

@@ -15,6 +15,9 @@ const imageCdn = detectImageCdn(process.env);
 // the .output being served; ANALYZE=1 adds the bundle visualizer.
 const ftOutDir = process.env.FT_OUT_DIR;
 const analyze = process.env.ANALYZE === "1";
+// serverFunctions.components adds ~18 KB gzip to the client entry of every page,
+// so only feature-tests/run.mjs turns it on (the islands page needs it).
+const ftComponents = process.env.FT_COMPONENTS === "1";
 
 export default defineConfig({
   define: {
@@ -28,8 +31,8 @@ export default defineConfig({
         devtools: false,
       },
       ssr: true,
-      // components: experimental server components (feature-tests/islands).
-      serverFunctions: { configure: "./src/server-config.ts", components: true },
+      // components: experimental server components (feature-tests/islands), off unless FT_COMPONENTS=1.
+      serverFunctions: { configure: "./src/server-config.ts", ...(ftComponents ? { components: true } : {}) },
     }),
     // @solidjs/image: build-time resizing for `?image` imports (feature-tests/image-pipeline).
     imagePlugin({
@@ -84,6 +87,27 @@ export default defineConfig({
           return JSON.stringify("/" + fileName);
         }
         return undefined;
+      },
+    },
+    // The feature-test routes import slices of the same packages as the home page.
+    // Left alone, that splits the Solid runtime into four small chunks (web, router,
+    // solid-js, server-function client) that the home page preloads one by one.
+    // Packages shared by three or more chunks go into one vendor chunk instead.
+    {
+      name: "vendor-chunk",
+      configEnvironment(name: string) {
+        if (name !== "client") return;
+        return {
+          build: {
+            rolldownOptions: {
+              output: {
+                codeSplitting: {
+                  groups: [{ name: "vendor", test: /node_modules/, minShareCount: 3 }],
+                },
+              },
+            },
+          },
+        };
       },
     },
     // feature-tests/bundle-analysis: `ANALYZE=1 vite build` writes a treemap

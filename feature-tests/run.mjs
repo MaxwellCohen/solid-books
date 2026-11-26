@@ -30,7 +30,7 @@ process.on("SIGINT", () => process.exit(130));
 
 if (!process.argv.includes("--skip-build")) {
   console.log("› vite build");
-  execFileSync(bin("vite"), ["build"], { cwd: root, stdio: "inherit" });
+  execFileSync(bin("vite"), ["build"], { cwd: root, stdio: "inherit", env: { ...process.env, FT_COMPONENTS: "1" } });
 }
 
 console.log(`› serving .output on :${port}`);
