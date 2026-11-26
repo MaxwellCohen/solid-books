@@ -6,3 +6,4 @@ interface ImportMetaEnv {
   /** Host image optimizer, set at build time by vite.config.ts. */
   readonly VITE_IMAGE_CDN: import("./lib/image-cdn-config").ImageCdn;
 }
+/// <reference types="@solidjs/image/env" />
