@@ -49,6 +49,116 @@ declare module "virtual:file-routes" {
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
+    },
+    {
+      path: "/feature-tests/bundle-analysis";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/bundle-analysis")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/caching";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/caching")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/css-inlining";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/css-inlining")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/font-optimization";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/font-optimization")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/image-pipeline";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/image-pipeline")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/index")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/islands";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/islands")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/multi-host-deployment";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/multi-host-deployment")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/prefetch-target";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/prefetch-target")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/feature-tests/prefetch-target")>;
+    },
+    {
+      path: "/feature-tests/reactivity";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/reactivity")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/render-modes";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/route-prefetching";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/route-prefetching")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/third-party-scripts";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/third-party-scripts")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/api/manual-cache";
+      page: false;
+      $GET: FileRouteLazyRef<typeof import("./src/routes/feature-tests/api/manual-cache")>;
+      $HEAD: FileRouteLazyRef<typeof import("./src/routes/feature-tests/api/manual-cache")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/api/nitro-cache";
+      page: false;
+      $GET: FileRouteLazyRef<typeof import("./src/routes/feature-tests/api/nitro-cache")>;
+      $HEAD: FileRouteLazyRef<typeof import("./src/routes/feature-tests/api/nitro-cache")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/render-modes/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/index")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/render-modes/prerendered";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/prerendered")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/feature-tests/render-modes/ssr";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/ssr")>;
+      $$route?: undefined;
     }
   ];
   export default routes;
@@ -76,6 +186,135 @@ declare module "virtual:file-routes" {
       id: "/*path";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/[...path]")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/";
+      id: "/feature-tests/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/index")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/caching";
+      id: "/feature-tests/caching";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/caching")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/islands";
+      id: "/feature-tests/islands";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/islands")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/reactivity";
+      id: "/feature-tests/reactivity";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/reactivity")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/css-inlining";
+      id: "/feature-tests/css-inlining";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/css-inlining")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/render-modes";
+      id: "/feature-tests/render-modes";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes")>;
+      $$route?: undefined;
+      children: readonly [
+        {
+          path: "/";
+          id: "/";
+          page: true;
+          $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/index")>;
+          $$route?: undefined;
+          children?: undefined;
+        },
+        {
+          path: "/ssr";
+          id: "/ssr";
+          page: true;
+          $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/ssr")>;
+          $$route?: undefined;
+          children?: undefined;
+        },
+        {
+          path: "/prerendered";
+          id: "/prerendered";
+          page: true;
+          $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/render-modes/prerendered")>;
+          $$route?: undefined;
+          children?: undefined;
+        }
+      ];
+    },
+    {
+      path: "/feature-tests/image-pipeline";
+      id: "/feature-tests/image-pipeline";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/image-pipeline")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/bundle-analysis";
+      id: "/feature-tests/bundle-analysis";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/bundle-analysis")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/prefetch-target";
+      id: "/feature-tests/prefetch-target";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/prefetch-target")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/feature-tests/prefetch-target")>;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/font-optimization";
+      id: "/feature-tests/font-optimization";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/font-optimization")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/route-prefetching";
+      id: "/feature-tests/route-prefetching";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/route-prefetching")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/third-party-scripts";
+      id: "/feature-tests/third-party-scripts";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/third-party-scripts")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/feature-tests/multi-host-deployment";
+      id: "/feature-tests/multi-host-deployment";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/feature-tests/multi-host-deployment")>;
       $$route?: undefined;
       children?: undefined;
     }

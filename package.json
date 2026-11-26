@@ -16,7 +16,8 @@
     "preview:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 dev",
     "deploy:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 deploy",
     "test:e2e": "playwright test",
-    "perf:budgets": "node scripts/perf-budgets.mjs"
+    "perf:budgets": "node scripts/perf-budgets.mjs",
+    "test:features": "node feature-tests/run.mjs"
   },
   "license": "MIT",
   "engines": {
@@ -34,6 +35,7 @@
     "filesystem-routing": "0.2.1",
     "jsdom": "^25.0.1",
     "oxlint": "~1.79.0",
+    "rollup-plugin-visualizer": "^7.3.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
@@ -47,6 +49,7 @@
     "@neon/env": "^1.2.2",
     "@neondatabase/serverless": "^1.1.0",
     "@remix-run/cookie": "^0.5.4",
+    "@solidjs/image": "1.0.0",
     "@solidjs/meta": "^1.0.0-next.2",
     "@solidjs/router": "^2.0.0-next.21",
     "@solidjs/web": "^2.0.0-rc.6",
