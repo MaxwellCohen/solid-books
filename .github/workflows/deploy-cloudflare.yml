@@ -1,0 +1,38 @@
+name: Deploy to Cloudflare
+
+# This worker has no Workers Builds connection, so pushes to `optimized`
+# build and deploy it from here instead.
+on:
+  push:
+    branches: [optimized]
+
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy
+        run: pnpm run deploy:cloudflare
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://solid-books-optimized.to-email-max.workers.dev/)
+            echo "attempt $i: $code"
+            [ "$code" = 200 ] && exit 0
+            sleep 10
+          done
+          exit 1
