@@ -1,0 +1,39 @@
+# Deploys to Vercel through Deploy Hooks instead of on every push, so a burst
+# of pushes becomes one deployment (Vercel Hobby allows 100 deployments a day).
+# Git auto-deploys are off in vercel.json ("git.deploymentEnabled": false).
+# Secret VERCEL_DEPLOY_HOOKS holds one "<branch> <deploy-hook-url>" per line.
+name: Vercel deploy
+
+on:
+  push:
+    branches: [main, optimized, nuxt-books-optimized-max]
+    paths-ignore: ["*.md", "tests/**", "e2e/**", "LICENSE"]
+  workflow_dispatch:
+
+# A newer push to the same branch cancels a run that is still waiting.
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Wait for further pushes
+        if: github.event_name == 'push'
+        run: sleep 600
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOKS: ${{ secrets.VERCEL_DEPLOY_HOOKS }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          urls=$(printf '%s\n' "$HOOKS" | awk -v b="$BRANCH" '$1 == b { print $2 }')
+          if [ -z "$urls" ]; then
+            echo "No Vercel deploy hook configured for $BRANCH"
+            exit 0
+          fi
+          for url in $urls; do
+            curl --fail --silent --show-error -X POST "$url" > /dev/null
+            echo "Triggered Vercel deploy for $BRANCH"
+          done
