@@ -241,3 +241,23 @@ input[type="range"]::-moz-range-thumb {
     animation: none !important;
   }
 }
+
+/* Layout for @solidjs/image, copied from @solidjs/image/style.css so it stays
+   in the inlined app CSS instead of a separate render-blocking stylesheet.
+   Covers use object-fit: cover (the package letterboxes with contain). */
+[data-solid-image="container"] { position: relative; width: 100%; height: 100%; }
+[data-solid-image="picture"],
+[data-solid-image="image"],
+[data-solid-image="blocker"] { position: absolute; inset: 0; }
+[data-solid-image="picture"],
+[data-solid-image="image"] {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+[data-solid-image="image"] { transition: opacity 0.2s ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  [data-solid-image="image"] { transition: none; }
+}

@@ -6,9 +6,11 @@ A Solid copy of next-books.dev
 
 The app follows the [image reveal gating proposal's Phase 0](https://github.com/solidjs/solid/blob/next/documentation/proposals/image-reveal-gating.md):
 
-- The first 10 grid covers (and the detail cover) get image preload links and
-  `fetchpriority="high"`. Remaining covers use native lazy loading and never
-  hold a reveal.
+- Covers render with `SolidImage` from `@solidjs/image`. The first 10 grid
+  covers (and the detail cover) are `eager`, so they get image preload links
+  and `fetchpriority="high"`. The other covers render as a blank placeholder
+  and load once they are within 500px of the viewport after hydration. They
+  never hold a reveal. Thumbhash previews show behind every cover until it loads.
 - Client navigation warms priority covers in parallel and holds the existing
   `Loading` boundary until decoding settles, with a maximum 500 ms image wait.
   Failed requests release the boundary; timed-out requests continue loading.

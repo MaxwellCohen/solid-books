@@ -7,7 +7,6 @@ import { EmptyState } from "../components/ui/empty-state";
 import { ErrorState } from "../components/ui/error-state";
 import { BackToBooksLink } from "../features/book/components/back-to-books-link";
 import { getApiDelayMs, parseSearchParams } from "../lib/url-state";
-import { BookCoverPreloads } from "../features/book/components/book-cover-preloads";
 import {
   BookDetail,
   BookDetailSkeleton,
@@ -68,9 +67,6 @@ export default function BookPage() {
           );
         }}
       >
-        <Loading>
-          <BookCoverPreloads books={[bookData()]} />
-        </Loading>
         <Loading fallback={<BookDetailSkeleton />}>
           <BookDetail book={bookData()} />
         </Loading>

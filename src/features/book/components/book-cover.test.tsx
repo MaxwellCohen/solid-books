@@ -1,8 +1,6 @@
-import { captureArtifact } from "@solidjs/diagnostics";
-import "@solidjs/diagnostics/vitest";
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import "@testing-library/jest-dom/vitest";
-import { createSignal, flush, For, Loading } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { sharedConfig } from "solid-js/internal";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, PRIORITY_COVER_COUNT } from "@/features/book/book-constants";
@@ -14,25 +12,35 @@ let requests: {
   resolve: () => void;
   reject: (error: Error) => void;
 }[];
-let imageComplete: boolean;
-let imageWidth: number;
+let observed: { element: Element; callback: IntersectionObserverCallback }[];
 
 beforeEach(() => {
   requests = [];
-  imageComplete = false;
-  imageWidth = 0;
+  observed = [];
   vi.stubGlobal(
     "Image",
     class {
       src = "";
-      complete = imageComplete;
-      naturalWidth = imageWidth;
+      complete = false;
+      naturalWidth = 0;
 
       decode() {
         const { promise, resolve, reject } = Promise.withResolvers<void>();
         requests.push({ src: this.src, resolve, reject });
         return promise;
       }
+    },
+  );
+  // jsdom has no IntersectionObserver; tests decide when a cover is visible.
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      constructor(private callback: IntersectionObserverCallback) {}
+      observe(element: Element) {
+        observed.push({ element, callback: this.callback });
+      }
+      unobserve() {}
+      disconnect() {}
     },
   );
 });
@@ -43,227 +51,92 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function settleImages() {
-  await new Promise((resolve) => setTimeout(resolve, 0));
+function scrollIntoView() {
+  for (const { element, callback } of observed) {
+    callback(
+      [{ target: element, isIntersecting: true } as unknown as IntersectionObserverEntry],
+      {} as IntersectionObserver,
+    );
+  }
   flush();
 }
 
-test("starts covers in parallel and holds Loading until every cover is decoded", async () => {
-  const { artifact } = await captureArtifact(async () => {
-    render(() => (
-      <Loading fallback={<p>Loading covers</p>}>
-        <For
-          each={["https://images.gr-assets.com/books/123m/456.jpg", "/second.jpg"]}
-        >
-          {(src) => (
-            <BookCover priority title={src} src={src} sizes="33vw" thumbhash={null} />
-          )}
-        </For>
-      </Loading>
-    ));
-    flush();
+function coverImage(name: string) {
+  return screen
+    .getAllByRole("img", { name })
+    .find((image) => image.tagName === "IMG")!;
+}
 
-    expect(requests.map((request) => request.src)).toEqual([
-      "https://images.gr-assets.com/books/123l/456.jpg",
-      "/second.jpg",
-    ]);
-    expect(screen.getByText("Loading covers")).toBeInTheDocument();
-    expect(screen.queryAllByRole("img")).toHaveLength(0);
-
-    requests[1].resolve();
-    await settleImages();
-    expect(screen.getByText("Loading covers")).toBeInTheDocument();
-    expect(screen.queryAllByRole("img")).toHaveLength(0);
-
-    requests[0].resolve();
-    await settleImages();
-    expect(screen.queryByText("Loading covers")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("img")).toHaveLength(2);
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("src", requests[0].src);
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("sizes", "33vw");
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("loading", "eager");
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("fetchpriority", "high");
-    expect(screen.getAllByRole("img")[0]).toHaveAttribute("decoding", "async");
-  }, { scenario: "book-covers-reveal-together" });
-
-  // The test resolves decodes instantly, so the held fallback is short by design.
-  expect(artifact).toHaveNoDiagnostics({ allow: ["FALLBACK_FLASH"] });
-});
-
-test("a failed cover releases Loading without hiding the other covers", async () => {
+test("priority covers render right away with a high fetch priority", () => {
   render(() => (
-    <Loading fallback={<p>Loading covers</p>}>
-      <BookCover
-        priority
-        title="Broken book"
-        src="/broken.jpg"
-        sizes="33vw"
-        thumbhash={null}
-      />
-      <BookCover
-        priority
-        title="Good book"
-        src="/good.jpg"
-        sizes="33vw"
-        thumbhash={null}
-      />
-    </Loading>
+    <BookCover
+      priority
+      title="Dune"
+      src="https://images.gr-assets.com/books/123m/456.jpg"
+      sizes="33vw"
+      thumbhash={null}
+    />
   ));
   flush();
 
-  requests[0].reject(new Error("Image could not be decoded"));
-  requests[1].resolve();
-  await settleImages();
-
-  expect(screen.queryByText("Loading covers")).not.toBeInTheDocument();
-  expect(
-    screen.getByRole("img", { name: "Cover unavailable for Broken book" }),
-  ).toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Good book" })).toHaveAttribute(
-    "src", "/good.jpg",
-  );
+  const image = coverImage("Dune");
+  expect(image).toHaveAttribute("src", "https://images.gr-assets.com/books/123l/456.jpg");
+  expect(image).toHaveAttribute("sizes", "33vw");
+  expect(image).toHaveAttribute("fetchpriority", "high");
+  expect(image).toHaveAttribute("width", "320");
+  expect(image).toHaveAttribute("height", "480");
 });
 
-test("also waits for the no-photo image when a book has no cover URL", async () => {
-  render(() => (
-    <Loading fallback={<p>Loading cover</p>}>
-      <BookCover priority title="No cover" src={null} sizes="33vw" thumbhash={null} />
-    </Loading>
-  ));
+test("books without a cover URL use the no-photo image", () => {
+  render(() => <BookCover priority title="No cover" src={null} sizes="33vw" thumbhash={null} />);
   flush();
-
-  expect(requests[0].src).toBe(EMPTY_IMAGE_URL);
-  expect(screen.getByText("Loading cover")).toBeInTheDocument();
-  requests[0].resolve();
-  await settleImages();
-  expect(screen.getByRole("img", { name: "No cover" })).toHaveAttribute(
-    "src", EMPTY_IMAGE_URL,
-  );
+  expect(coverImage("No cover")).toHaveAttribute("src", EMPTY_IMAGE_URL);
 });
 
-test("keeps the previous decoded cover while replacing it and ignores stale decodes", async () => {
-  const { artifact } = await captureArtifact(async () => {
-    const [src, setSrc] = createSignal("/replace-first.jpg", { name: "test.coverSrc" });
-    render(() => (
-      <Loading fallback={<p>Loading cover</p>}>
-        <BookCover priority title="Book" src={src()} sizes="33vw" thumbhash={null} />
-      </Loading>
-    ));
-    flush();
-    requests[0].resolve();
-    await settleImages();
-
-    setSrc("/replace-second.jpg");
-    flush();
-    setSrc("/replace-third.jpg");
-    flush();
-    expect(requests.map((request) => request.src)).toEqual([
-      "/replace-first.jpg", "/replace-second.jpg", "/replace-third.jpg",
-    ]);
-    expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-first.jpg",
-    );
-
-    requests[1].resolve();
-    await settleImages();
-    expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-first.jpg",
-    );
-
-    requests[2].resolve();
-    await settleImages();
-    expect(screen.getByRole("img", { name: "Book" })).toHaveAttribute(
-      "src", "/replace-third.jpg",
-    );
-    expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  }, { scenario: "book-cover-source-change" });
-
-  // The test resolves decodes instantly, so the held fallback is short by design.
-  expect(artifact).toHaveNoDiagnostics({ allow: ["FALLBACK_FLASH"] });
-  expect(artifact).toStayWithinRerunBudget(2, { scope: "BookCover.readySrc" });
-});
-
-test("a preloaded cover renders immediately without a second decode", async () => {
-  const ready = loadBookCover("/preloaded.jpg");
-  requests[0].resolve();
-  await ready;
-
-  render(() => (
-    <Loading fallback={<p>Loading cover</p>}>
-      <BookCover priority title="Preloaded" src="/preloaded.jpg" sizes="33vw" thumbhash={null} />
-    </Loading>
-  ));
+test("lazy covers wait until they are near the viewport", () => {
+  render(() => <BookCover title="Lazy" src="/lazy.jpg" sizes="33vw" thumbhash={null} />);
   flush();
 
-  expect(requests).toHaveLength(1);
-  expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Preloaded" })).toHaveAttribute("src", "/preloaded.jpg");
-});
-
-test("a stalled cover releases the whole boundary after 500 ms and can still report an error", async () => {
-  vi.useFakeTimers();
-  render(() => (
-    <Loading fallback={<p>Loading covers</p>}>
-      <BookCover priority title="Slow" src="/slow.jpg" sizes="33vw" thumbhash={null} />
-      <BookCover priority title="Fast" src="/fast.jpg" sizes="33vw" thumbhash={null} />
-    </Loading>
-  ));
-  flush();
-  requests[1].resolve();
-  await vi.advanceTimersByTimeAsync(COVER_REVEAL_TIMEOUT_MS - 1);
-  flush();
-  expect(screen.getByText("Loading covers")).toBeInTheDocument();
-
-  await vi.advanceTimersByTimeAsync(1);
-  flush();
-  expect(screen.queryByText("Loading covers")).not.toBeInTheDocument();
-  expect(screen.getAllByRole("img")).toHaveLength(2);
-  expect(screen.getByRole("img", { name: "Slow" })).toHaveAttribute("src", "/slow.jpg");
-  expect(vi.getTimerCount()).toBe(0);
-
-  // A late decode must not re-suspend the boundary or restart its timeout.
-  requests[0].reject(new Error("Late decode failure"));
-  await vi.advanceTimersByTimeAsync(0);
-  expect(loadBookCover("/slow.jpg")).toBe("/slow.jpg");
-  fireEvent.error(screen.getByRole("img", { name: "Slow" }));
-  flush();
-  expect(screen.getByRole("img", { name: "Cover unavailable for Slow" })).toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Fast" })).toHaveAttribute("src", "/fast.jpg");
-});
-
-test("lazy covers render immediately, without preloading or holding Loading", () => {
-  render(() => (
-    <Loading fallback={<p>Loading cover</p>}>
-      <BookCover title="Lazy" src="/lazy.jpg" sizes="33vw" thumbhash={null} />
-    </Loading>
-  ));
-  flush();
-
-  expect(requests).toHaveLength(0);
-  expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  const image = screen.getByRole("img", { name: "Lazy" });
+  expect(screen.queryByRole("img", { name: "Lazy" })).not.toBeInTheDocument();
+  scrollIntoView();
+  const image = coverImage("Lazy");
   expect(image).toHaveAttribute("src", "/lazy.jpg");
-  expect(image).toHaveAttribute("loading", "lazy");
+  expect(image).toHaveAttribute("decoding", "async");
   expect(image).not.toHaveAttribute("fetchpriority");
-
-  fireEvent.error(image);
-  flush();
-  expect(screen.getByRole("img", { name: "Cover unavailable for Lazy" })).toBeInTheDocument();
 });
 
-test("already complete covers do not decode or suspend", () => {
-  imageComplete = true;
-  imageWidth = 100;
-  render(() => (
-    <Loading fallback={<p>Loading cover</p>}>
-      <BookCover priority title="Cached" src="/browser-cached.jpg" sizes="33vw" thumbhash={null} />
-    </Loading>
-  ));
+test("a failed cover shows the unavailable message", () => {
+  render(() => <BookCover priority title="Broken" src="/broken.jpg" sizes="33vw" thumbhash={null} />);
   flush();
 
-  expect(requests).toHaveLength(0);
-  expect(screen.queryByText("Loading cover")).not.toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "Cached" })).toHaveAttribute("src", "/browser-cached.jpg");
+  fireEvent.error(coverImage("Broken"));
+  flush();
+  expect(screen.getByRole("img", { name: "Cover unavailable for Broken" })).toBeInTheDocument();
+});
+
+test("changing the book swaps the cover", () => {
+  const [src, setSrc] = createSignal("/first.jpg");
+  render(() => <BookCover priority title="Book" src={src()} sizes="33vw" thumbhash={null} />);
+  flush();
+  expect(coverImage("Book")).toHaveAttribute("src", "/first.jpg");
+
+  setSrc("/second.jpg");
+  flush();
+  expect(coverImage("Book")).toHaveAttribute("src", "/second.jpg");
+});
+
+test("loadBookCover resolves to null when the cover cannot be decoded", async () => {
+  const pending = loadBookCover("/bad-decode.jpg");
+  requests[0].reject(new Error("Image could not be decoded"));
+  expect(await pending).toBeNull();
+});
+
+test("loadBookCover gives up waiting after the reveal timeout", async () => {
+  vi.useFakeTimers();
+  const pending = loadBookCover("/stalled.jpg");
+  await vi.advanceTimersByTimeAsync(COVER_REVEAL_TIMEOUT_MS);
+  expect(await pending).toBe("/stalled.jpg");
+  expect(vi.getTimerCount()).toBe(0);
 });
 
 test("hydration skips decoding without marking the image ready for later navigation", () => {

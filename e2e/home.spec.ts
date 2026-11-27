@@ -30,12 +30,12 @@ test("main content and the LCP cover are in the HTML before hydration", async ({
   await expect(covers).toHaveCount(28);
   const lcp = covers.first();
   await expect(lcp).toBeVisible();
-  await expect(lcp).toHaveAttribute("loading", "eager");
   await expect(lcp).toHaveAttribute("fetchpriority", "high");
   await expect(lcp).toHaveAttribute("width", /\d+/);
   await expect(lcp).toHaveAttribute("height", /\d+/);
   await expect(lcp).toHaveAttribute("srcset", /\/_vercel\/image\?/);
-  await expect(covers.nth(10)).toHaveAttribute("loading", "lazy");
+  // @solidjs/image: lazy covers start as a blank SVG and load after hydration.
+  await expect(covers.nth(10)).toHaveAttribute("src", /^data:image\/svg\+xml/);
   expect(await page.evaluate(() => document.querySelectorAll('link[rel="stylesheet"]').length)).toBe(0);
 });
 
@@ -93,6 +93,19 @@ test.describe("at DPR 1", () => {
     // ~116 CSS px columns at DPR 1 → the 128w candidate, never the original size.
     expect(Math.max(...widths)).toBeLessThanOrEqual(128);
   });
+});
+
+test("lazy covers load once scrolled near", async ({ page }) => {
+  await stubCovers(page);
+  await page.goto("/");
+  await hydrated(page);
+  const last = page.locator("main img").last();
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toHaveAttribute("src", /gr-assets\.com|nophoto/);
+  await expect(last).toHaveAttribute("srcset", /\/_vercel\/image\?/);
+  await expect
+    .poll(() => last.evaluate((image) => (image as HTMLImageElement).currentSrc))
+    .toContain("/_vercel/image?");
 });
 
 test("an early scroll survives hydration", async ({ page }) => {
