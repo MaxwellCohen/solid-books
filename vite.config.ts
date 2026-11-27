@@ -10,6 +10,12 @@ import { detectImageCdn, IMAGE_HOSTS, IMAGE_WIDTHS } from "./src/lib/image-cdn-c
 
 const imageCdn = detectImageCdn(process.env);
 
+// Page cache lifetime for the CDN; stale copies are served while it refreshes.
+const PAGE_CACHE_SECONDS = 60 * 60;
+const pageIsr = process.env.NETLIFY
+  ? PAGE_CACHE_SECONDS
+  : { expiration: PAGE_CACHE_SECONDS, passQuery: true };
+
 // Feature tests (feature-tests/): optional build-time switches.
 // FT_OUT_DIR sends the Nitro output elsewhere so a test build cannot clobber
 // the .output being served; ANALYZE=1 adds the bundle visualizer.
@@ -50,8 +56,23 @@ export default defineConfig({
       ...(ftOutDir ? { output: { dir: ftOutDir } } : {}),
       // feature-tests/render-modes: one prerendered route next to per-request SSR.
       prerender: { routes: ["/feature-tests/render-modes/prerendered"] },
-      // feature-tests/caching: Nitro's response cache on one handler.
       routeRules: {
+        // Catalog pages (home and /:id) are the same for every visitor, so the
+        // host CDN keeps them. Nitro's `isr` rule maps to Vercel ISR (prerender
+        // functions) and to Netlify's durable CDN cache. Vercel needs the object
+        // form to forward ?search/?page/filters to the renderer (each query is
+        // cached on its own); Netlify's runtime only reads a number, which it
+        // turns into max-age plus stale-while-revalidate.
+        // The server-function endpoint and feature-test pages stay per-request.
+        // They come first: the Vercel preset orders same-depth rules by
+        // declaration, and Vercel routes are first-match.
+        "/_server": { isr: false },
+        "/_server/**": { isr: false },
+        "/feature-tests": { isr: false },
+        "/feature-tests/**": { isr: false },
+        "/": { isr: pageIsr },
+        "/:id": { isr: pageIsr },
+        // feature-tests/caching: Nitro's response cache on one handler.
         "/feature-tests/api/nitro-cache": { cache: { maxAge: 2 } },
       },
       // Host image optimizers for cover srcsets (see src/lib/image-cdn.ts).
