@@ -16,7 +16,6 @@
     "preview:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 dev",
     "deploy:cloudflare": "CLOUDFLARE=1 vite build && npx --yes wrangler@4.132.0 deploy",
     "test:e2e": "playwright test",
-    "perf:budgets": "node scripts/perf-budgets.mjs",
     "test:features": "node feature-tests/run.mjs"
   },
   "license": "MIT",

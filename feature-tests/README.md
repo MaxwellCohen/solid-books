@@ -9,7 +9,7 @@ pnpm test:features          # vite build → serve .output on :4107 → playwrig
 node feature-tests/run.mjs --skip-build   # reuse the existing .output
 ```
 
-`pnpm test:features` builds with `FT_COMPONENTS=1`, which turns on the experimental `serverFunctions.components` option the islands page needs. The option adds about 18 KB gzip to every page's client entry, so a plain `pnpm build` leaves it off and the performance budgets measure the app without it.
+`pnpm test:features` builds with `FT_COMPONENTS=1`, which turns on the experimental `serverFunctions.components` option the islands page needs. The option adds about 18 KB gzip to every page's client entry, so a plain `pnpm build` leaves it off.
 
 `FT_PORT` changes the port; `CHROME_PATH` the browser (defaults to the system Chrome; no
 Playwright browser download needed). Results land in `feature-tests/results.json`;
