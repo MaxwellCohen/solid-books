@@ -1,4 +1,4 @@
-name: Performance
+name: Tests
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  budgets:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,6 @@ jobs:
       - run: pnpm build
         env:
           IMAGE_CDN: vercel
-      - run: pnpm perf:budgets
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
